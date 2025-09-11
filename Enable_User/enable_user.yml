@@ -1,0 +1,39 @@
+---
+- name: Enable user account on multiple servers
+  hosts: all
+  become: yes
+  vars_files:
+    - passwords.yml
+
+  vars_prompt:
+    - name: target_username
+      prompt: "Podaj nazwe uzytkownika do wlaczenia"
+      private: no
+
+  vars:
+    ansible_ssh_pass: "{{ servers[inventory_hostname].ssh }}"
+    ansible_sudo_pass: "{{ servers[inventory_hostname].sudo }}"
+
+  tasks:
+    - name: Check if user exists
+      getent:
+        database: passwd
+        key: "{{ target_username }}"
+      register: user_check
+      ignore_errors: yes
+
+    - name: Stop if user doesn't exist
+      fail:
+        msg: "Uzytkownik {{ target_username }} nie istnieje"
+      when: user_check.failed
+
+    - name: Unlock user account
+      user:
+        name: "{{ target_username }}"
+        password_lock: no
+        shell: /bin/bash        # przywraca normalną powłokę
+        expires: -1             # brak daty wygaśnięcia konta
+
+    - name: Confirm user enabled
+      debug:
+        msg: "Uzytkownik {{ target_username }} zostal wlaczony na {{ inventory_hostname }}"
