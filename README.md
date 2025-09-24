@@ -1,3 +1,4 @@
 # ansible
 
-Playbooki stworzone na zlecenie od Control Design
+Templatki playbooków stworzone na zlecenie od Control Design
+Hasło do .vault_pass = a123
